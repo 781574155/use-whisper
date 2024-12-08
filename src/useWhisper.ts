@@ -1,5 +1,5 @@
-import { useEffectAsync } from './useEffectAsync';
-import { useMemoAsync } from './useMemoAsync';
+import { useEffectAsync } from './useEffectAsync'
+import { useMemoAsync } from './useMemoAsync'
 import type { Harker } from 'hark'
 import type { Encoder } from 'lamejs'
 import { useEffect, useRef, useState } from 'react'
@@ -33,9 +33,9 @@ const defaultConfig: UseWhisperConfig = {
   onDataAvailable: undefined,
   onTranscribe: undefined,
   whisperApiEndpoints: {
-    transcriptions:`${defaultWhisperApiEndpoint}/transcriptions`,
-    translations:`${defaultWhisperApiEndpoint}/translations`
-  }
+    transcriptions: `${defaultWhisperApiEndpoint}/transcriptions`,
+    translations: `${defaultWhisperApiEndpoint}/translations`,
+  },
 }
 
 /**
@@ -76,16 +76,25 @@ export const useWhisper: UseWhisperHook = (config) => {
     ...config,
   }
 
-  if(!whisperApiEndpoints) {
-    throw new Error('whisperApiEndpoints is required and should not have been nullified')
+  if (!whisperApiEndpoints) {
+    throw new Error(
+      'whisperApiEndpoints is required and should not have been nullified'
+    )
   }
 
-  whisperApiEndpoints.transcriptions = whisperApiEndpoints?.transcriptions || `${defaultWhisperApiEndpoint}/transcriptions`
-  whisperApiEndpoints.translations = whisperApiEndpoints?.translations || `${defaultWhisperApiEndpoint}/translations`
+  whisperApiEndpoints.transcriptions =
+    whisperApiEndpoints?.transcriptions ||
+    `${defaultWhisperApiEndpoint}/transcriptions`
+  whisperApiEndpoints.translations =
+    whisperApiEndpoints?.translations ||
+    `${defaultWhisperApiEndpoint}/translations`
 
-  const hasDefaultEndpoints = whisperApiEndpoints?.transcriptions || whisperApiEndpoints?.translations;
+  const hasDefaultEndpoints =
+    whisperApiEndpoints?.transcriptions || whisperApiEndpoints?.translations
   if (!apiKey && !onTranscribeCallback && !hasDefaultEndpoints) {
-    throw new Error('Either apiKey, whisperApiEndpoints, or onTranscribeCallback is required')
+    throw new Error(
+      'Either apiKey, whisperApiEndpoints, or onTranscribeCallback is required'
+    )
   }
 
   const chunks = useRef<Blob[]>([])
@@ -388,58 +397,60 @@ export const useWhisper: UseWhisperHook = (config) => {
   const onTranscribing = async () => {
     try {
       if (encoder.current && recorder.current) {
-        const recordState = await recorder.current.getState();
+        const recordState = await recorder.current.getState()
         if (recordState === 'stopped') {
-          setTranscribing(true);
-          let blob = await recorder.current.getBlob();
+          setTranscribing(true)
+          let blob = await recorder.current.getBlob()
           if (removeSilence) {
-            const { FFmpeg } = await import('@ffmpeg/ffmpeg');
-            const ffmpeg = new FFmpeg();
+            const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+            const ffmpeg = new FFmpeg()
             await ffmpeg.load({
               coreURL: ffmpegCoreUrl,
-            });
-            const buffer = await blob.arrayBuffer();
-            await ffmpeg.writeFile('in.wav', new Uint8Array(buffer));
+            })
+            const buffer = await blob.arrayBuffer()
+            await ffmpeg.writeFile('in.wav', new Uint8Array(buffer))
             await ffmpeg.exec([
-              '-i', 'in.wav',
-              '-acodec', 'libmp3lame',
-              '-b:a', '96k',
-              '-ar', '44100',
-              '-af', silenceRemoveCommand,
-              'out.mp3'
-            ]);
-            const out = await ffmpeg.readFile('out.mp3', 'binary');
+              '-i',
+              'in.wav',
+              '-acodec',
+              'libmp3lame',
+              '-b:a',
+              '96k',
+              '-ar',
+              '44100',
+              '-af',
+              silenceRemoveCommand,
+              'out.mp3',
+            ])
+            const out = await ffmpeg.readFile('out.mp3', 'binary')
             if (out.length <= 225) {
-              ffmpeg.terminate();
-              setTranscript({ blob });
-              setTranscribing(false);
-              return;
+              ffmpeg.terminate()
+              setTranscript({ blob })
+              setTranscribing(false)
+              return
             }
-            blob = new Blob([out], { type: 'audio/mpeg' });
-            ffmpeg.terminate();
+            blob = new Blob([out], { type: 'audio/mpeg' })
+            ffmpeg.terminate()
           } else {
-            const buffer = await blob.arrayBuffer();
-            const mp3 = encoder.current.encodeBuffer(new Int16Array(buffer));
-            blob = new Blob([mp3], { type: 'audio/mpeg' });
+            const buffer = await blob.arrayBuffer()
+            const mp3 = encoder.current.encodeBuffer(new Int16Array(buffer))
+            blob = new Blob([mp3], { type: 'audio/mpeg' })
           }
           if (typeof onTranscribeCallback === 'function') {
-            const transcribed = await onTranscribeCallback(blob);
-            setTranscript(transcribed);
+            const transcribed = await onTranscribeCallback(blob)
+            setTranscript(transcribed)
           } else {
-            const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' });
-            const text = await onWhispered(file);
-            setTranscript({ blob, text });
+            const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' })
+            const text = await onWhispered(file)
+            setTranscript({ blob, text })
           }
-          setTranscribing(false);
+          setTranscribing(false)
         }
       }
     } catch (err) {
-      setTranscribing(false);
+      setTranscribing(false)
     }
-  };
-  
-  
-
+  }
 
   /**
    * Get audio data in chunk based on timeSlice
@@ -506,7 +517,7 @@ export const useWhisper: UseWhisperHook = (config) => {
       if (apiKey) {
         headers['Authorization'] = `Bearer ${apiKey}`
       }
-      const endpoint = whisperApiEndpoints[mode ?? "transcriptions"]
+      const endpoint = whisperApiEndpoints[mode ?? 'transcriptions']
 
       const response = await fetch(endpoint as string, {
         method: 'POST',
@@ -527,6 +538,6 @@ export const useWhisper: UseWhisperHook = (config) => {
     pauseRecording,
     startRecording,
     stopRecording,
-    onTranscribing
+    onTranscribing,
   }
 }

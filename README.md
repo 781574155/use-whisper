@@ -31,7 +31,7 @@ const App = () => {
     startRecording,
     stopRecording,
   } = useWhisper({
-    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN, ⚠️ this is dangerous to expose front-end 
+    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN, ⚠️ this is dangerous to expose front-end
   })
 
   return (
@@ -54,13 +54,12 @@ const App = () => {
 import { useWhisper } from '@cloudraker/use-whisper'
 
 const App = () => {
-
   const { transcript } = useWhisper({
     // callback to handle transcription with custom server
     whisperApiEndpoints: {
       transcriptions: `https://your-custom-endpoint/api/whisper/transcriptions`,
-      translations: `https://your-custom-endpoint/api/whisper/translations`
-    }
+      translations: `https://your-custom-endpoint/api/whisper/translations`,
+    },
   })
 
   return (
@@ -74,15 +73,17 @@ const App = () => {
 And here's a sample server implementation for transcriptions (Next.js 15 with App router), proxying the requests to OpenAI
 
 ```ts
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const whisperApiUrl = 'https://api.openai.com/v1/audio/transcriptions';
+  const apiKey = process.env.OPENAI_API_KEY
+  const whisperApiUrl = 'https://api.openai.com/v1/audio/transcriptions'
 
   if (!apiKey) {
-    return NextResponse.json({ error: 'OPENAI_API_KEY is not set' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'OPENAI_API_KEY is not set' },
+      { status: 500 }
+    )
   }
 
   try {
@@ -90,15 +91,18 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: req.body,
-    });
+    })
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    const data = await response.json()
+    return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to proxy request' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to proxy request' },
+      { status: 500 }
+    )
   }
 }
 ```
@@ -224,21 +228,21 @@ _most of these dependecies are lazy loaded, so it is only imported when it is ne
 
 - ###### Config Object
 
-| Name              | Type                                               | Default Value  | Description                                                                                                          |
-| ----------------- | -------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| apiKey            | string                                             | ''             | your OpenAI API token                                                                                                |
-| autoStart         | boolean                                            | false          | auto start speech recording on component mount                                                                       |
-| autoTranscribe    | boolean                                            | true           | should auto transcribe after stop recording                                                                          |
-| mode              | string                                             | transcriptions | control Whisper mode either transcriptions or translations, currently only support translation to English            |
-| nonStop           | boolean                                            | false          | if true, record will auto stop after stopTimeout. However if user keep on speaking, the recorder will keep recording |
-| removeSilence     | boolean                                            | false          | remove silence before sending file to OpenAI API                                                                     |
-| stopTimeout       | number                                             | 5,000 ms       | if nonStop is true, this become required. This control when the recorder auto stop                                   |
-| streaming         | boolean                                            | false          | transcribe speech in real-time based on timeSlice                                                                    |
-| timeSlice         | number                                             | 1000 ms        | interval between each onDataAvailable event                                                                          |
-| whisperConfig     | [WhisperApiConfig](#whisperapiconfig)              | undefined      | Whisper API transcription config                                                                                     |
-| whisperApiEndpoint| string                                             | undefined      | optional endpoints for the Whisper API (e.g., { transcriptions: '', translations: '' }), useful for proxy requests                                                                            |
-| onDataAvailable   | (blob: Blob) => void                               | undefined      | callback function for getting recorded blob in interval between timeSlice                                            |
-| onTranscribe      | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined      | callback function to handle transcription on your own custom server                                                  |
+| Name               | Type                                               | Default Value  | Description                                                                                                          |
+| ------------------ | -------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| apiKey             | string                                             | ''             | your OpenAI API token                                                                                                |
+| autoStart          | boolean                                            | false          | auto start speech recording on component mount                                                                       |
+| autoTranscribe     | boolean                                            | true           | should auto transcribe after stop recording                                                                          |
+| mode               | string                                             | transcriptions | control Whisper mode either transcriptions or translations, currently only support translation to English            |
+| nonStop            | boolean                                            | false          | if true, record will auto stop after stopTimeout. However if user keep on speaking, the recorder will keep recording |
+| removeSilence      | boolean                                            | false          | remove silence before sending file to OpenAI API                                                                     |
+| stopTimeout        | number                                             | 5,000 ms       | if nonStop is true, this become required. This control when the recorder auto stop                                   |
+| streaming          | boolean                                            | false          | transcribe speech in real-time based on timeSlice                                                                    |
+| timeSlice          | number                                             | 1000 ms        | interval between each onDataAvailable event                                                                          |
+| whisperConfig      | [WhisperApiConfig](#whisperapiconfig)              | undefined      | Whisper API transcription config                                                                                     |
+| whisperApiEndpoint | string                                             | undefined      | optional endpoints for the Whisper API (e.g., { transcriptions: '', translations: '' }), useful for proxy requests   |
+| onDataAvailable    | (blob: Blob) => void                               | undefined      | callback function for getting recorded blob in interval between timeSlice                                            |
+| onTranscribe       | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined      | callback function to handle transcription on your own custom server                                                  |
 
 - ###### WhisperApiConfig
 

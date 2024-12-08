@@ -32,7 +32,10 @@ const defaultConfig: UseWhisperConfig = {
   timeSlice: 1_000,
   onDataAvailable: undefined,
   onTranscribe: undefined,
-  whisperApiEndpoint: defaultWhisperApiEndpoint,
+  whisperApiEndpoints: {
+    transcriptions:`${defaultWhisperApiEndpoint}/transcriptions`,
+    translations:`${defaultWhisperApiEndpoint}/translations`
+  }
 }
 
 /**
@@ -67,14 +70,22 @@ export const useWhisper: UseWhisperHook = (config) => {
     whisperConfig,
     onDataAvailable: onDataAvailableCallback,
     onTranscribe: onTranscribeCallback,
-    whisperApiEndpoint = defaultWhisperApiEndpoint,
+    whisperApiEndpoints,
   } = {
     ...defaultConfig,
     ...config,
   }
 
-  if (!apiKey && !onTranscribeCallback && !whisperApiEndpoint) {
-    throw new Error('Either apiKey, whisperApiEndpoint, or onTranscribeCallback is required')
+  if(!whisperApiEndpoints) {
+    throw new Error('whisperApiEndpoints is required and should not have been nullified')
+  }
+
+  whisperApiEndpoints.transcriptions = whisperApiEndpoints?.transcriptions || `${defaultWhisperApiEndpoint}/transcriptions`
+  whisperApiEndpoints.translations = whisperApiEndpoints?.translations || `${defaultWhisperApiEndpoint}/translations`
+
+  const hasDefaultEndpoints = whisperApiEndpoints?.transcriptions || whisperApiEndpoints?.translations;
+  if (!apiKey && !onTranscribeCallback && !hasDefaultEndpoints) {
+    throw new Error('Either apiKey, whisperApiEndpoints, or onTranscribeCallback is required')
   }
 
   const chunks = useRef<Blob[]>([])
@@ -495,7 +506,9 @@ export const useWhisper: UseWhisperHook = (config) => {
       if (apiKey) {
         headers['Authorization'] = `Bearer ${apiKey}`
       }
-      const response = await fetch(whisperApiEndpoint + mode, {
+      const endpoint = whisperApiEndpoints[mode ?? "transcriptions"]
+
+      const response = await fetch(endpoint as string, {
         method: 'POST',
         body,
         headers,

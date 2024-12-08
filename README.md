@@ -4,8 +4,6 @@ React Hook for OpenAI Whisper API with speech recorder, real-time transcription,
 
 ---
 
-- ### Demo
-
 - ### Install
 
 ```
@@ -59,7 +57,10 @@ const App = () => {
 
   const { transcript } = useWhisper({
     // callback to handle transcription with custom server
-    whisperApiEndpoint: `https://your-custom-endpoint/api/whisper` 
+    whisperApiEndpoints: {
+      transcriptions: `https://your-custom-endpoint/api/whisper/transcriptions`,
+      translations: `https://your-custom-endpoint/api/whisper/translations`
+    }
   })
 
   return (
@@ -70,7 +71,7 @@ const App = () => {
 }
 ```
 
-And here's a sample server implementation (Next.js 15 with App router), proxying the requests to OpenAI
+And here's a sample server implementation for transcriptions (Next.js 15 with App router), proxying the requests to OpenAI
 
 ```ts
 
@@ -78,7 +79,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY;
-  const whisperApiUrl = 'https://api.openai.com/v1/audio/whisper';
+  const whisperApiUrl = 'https://api.openai.com/v1/audio/transcriptions';
 
   if (!apiKey) {
     return NextResponse.json({ error: 'OPENAI_API_KEY is not set' }, { status: 500 });
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
 
 - ### Examples
 
-- ###### Real-time streaming trascription
+- ###### Real-time streaming transcription
 
 ```jsx
 import { useWhisper } from '@cloudraker/use-whisper'
@@ -134,7 +135,6 @@ import { useWhisper } from '@cloudraker/use-whisper'
 
 const App = () => {
   const { transcript } = useWhisper({
-    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN
     // use ffmpeg-wasp to remove silence from recorded speech
     removeSilence: true,
   })
@@ -154,7 +154,6 @@ import { useWhisper } from '@cloudraker/use-whisper'
 
 const App = () => {
   const { transcript } = useWhisper({
-    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN
     // will auto start recording speech upon component mounted
     autoStart: true,
   })
@@ -174,7 +173,6 @@ import { useWhisper } from '@cloudraker/use-whisper'
 
 const App = () => {
   const { transcript } = useWhisper({
-    apiKey: process.env.OPENAI_API_TOKEN, // YOUR_OPEN_AI_TOKEN
     nonStop: true, // keep recording as long as the user is speaking
     stopTimeout: 5000, // auto stop after 5 seconds
   })
@@ -238,7 +236,7 @@ _most of these dependecies are lazy loaded, so it is only imported when it is ne
 | streaming         | boolean                                            | false          | transcribe speech in real-time based on timeSlice                                                                    |
 | timeSlice         | number                                             | 1000 ms        | interval between each onDataAvailable event                                                                          |
 | whisperConfig     | [WhisperApiConfig](#whisperapiconfig)              | undefined      | Whisper API transcription config                                                                                     |
-| whisperApiEndpoint| string                                             | undefined      | optional endpoint for the Whisper API, useful to proxy request and avoid exposing your API key client side                                                                                |
+| whisperApiEndpoint| string                                             | undefined      | optional endpoints for the Whisper API (e.g., { transcriptions: '', translations: '' }), useful for proxy requests                                                                            |
 | onDataAvailable   | (blob: Blob) => void                               | undefined      | callback function for getting recorded blob in interval between timeSlice                                            |
 | onTranscribe      | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined      | callback function to handle transcription on your own custom server                                                  |
 

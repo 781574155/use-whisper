@@ -11,7 +11,12 @@ export type UseWhisperConfig = {
   whisperConfig?: WhisperApiConfig
   onDataAvailable?: (blob: Blob) => void
   onTranscribe?: (blob: Blob) => Promise<UseWhisperTranscript>
-  whisperApiEndpoint?: string
+  whisperApiEndpoints?:WhisperAPIEndpointsConfig
+}
+
+export type WhisperAPIEndpointsConfig = {
+  transcriptions?: string
+  translations?: string
 }
 
 export type UseWhisperTimeout = {

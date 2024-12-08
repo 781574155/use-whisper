@@ -73,36 +73,31 @@ const App = () => {
 And here's a sample server implementation for transcriptions (Next.js 15 with App router), proxying the requests to OpenAI
 
 ```ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.OPENAI_API_KEY
-  const whisperApiUrl = 'https://api.openai.com/v1/audio/transcriptions'
+  const apiKey = process.env.OPENAI_API_KEY;
+  const whisperApiUrl = 'https://api.openai.com/v1/audio/transcriptions';
 
   if (!apiKey) {
-    return NextResponse.json(
-      { error: 'OPENAI_API_KEY is not set' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'OPENAI_API_KEY is not set' }, { status: 500 });
   }
 
   try {
+    const formData = await req.formData();
     const response = await fetch(whisperApiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
-      body: req.body,
-    })
+      body: formData,
+    });
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to proxy request' },
-      { status: 500 }
-    )
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to proxy request' }, { status: 500 });
   }
 }
 ```

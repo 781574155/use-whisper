@@ -73,8 +73,8 @@ export const useWhisper: UseWhisperHook = (config) => {
     ...config,
   }
 
-  if (!apiKey && !onTranscribeCallback) {
-    throw new Error('apiKey is required if onTranscribe is not provided')
+  if (!apiKey && !onTranscribeCallback && !whisperApiEndpoint) {
+    throw new Error('Either apiKey, whisperApiEndpoint, or onTranscribeCallback is required')
   }
 
   const chunks = useRef<Blob[]>([])

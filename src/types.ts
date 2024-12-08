@@ -11,6 +11,7 @@ export type UseWhisperConfig = {
   whisperConfig?: WhisperApiConfig
   onDataAvailable?: (blob: Blob) => void
   onTranscribe?: (blob: Blob) => Promise<UseWhisperTranscript>
+  whisperApiEndpoint?: string
 }
 
 export type UseWhisperTimeout = {
@@ -41,3 +42,7 @@ export type WhisperApiConfig = {
   temperature?: number
   language?: string
 }
+
+declare const UNDEFINED_VOID_ONLY: unique symbol
+
+export type Destructor = () => void | { [UNDEFINED_VOID_ONLY]: never }

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-12-06
+
+### Forked
+
+- This version marks the fork from the original repository (chengsokdara/use-whisper) to a new one maintained by cloudraker (cloudraker/use-whisper).
+
+### Added
+
+- Include async hooks with the repository.
+
+### Changed
+
+- Updated ffmpeg to the latest version.
+- Replaced Axios with fetch for HTTP requests.
+- Allowed overriding of the OpenAI endpoint for proxying purposes.
+
 ## [0.2.0] - 2023-04-01
 
 ### Added

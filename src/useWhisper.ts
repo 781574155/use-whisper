@@ -1,5 +1,5 @@
-import { useEffectAsync, useMemoAsync } from '@chengsokdara/react-hooks-async'
-import type { RawAxiosRequestHeaders } from 'axios'
+import { useEffectAsync } from './useEffectAsync';
+import { useMemoAsync } from './useMemoAsync';
 import type { Harker } from 'hark'
 import type { Encoder } from 'lamejs'
 import { useEffect, useRef, useState } from 'react'
@@ -8,7 +8,7 @@ import {
   defaultStopTimeout,
   ffmpegCoreUrl,
   silenceRemoveCommand,
-  whisperApiEndpoint,
+  defaultWhisperApiEndpoint,
 } from './configs'
 import {
   UseWhisperConfig,
@@ -32,6 +32,7 @@ const defaultConfig: UseWhisperConfig = {
   timeSlice: 1_000,
   onDataAvailable: undefined,
   onTranscribe: undefined,
+  whisperApiEndpoint: defaultWhisperApiEndpoint,
 }
 
 /**
@@ -66,6 +67,7 @@ export const useWhisper: UseWhisperHook = (config) => {
     whisperConfig,
     onDataAvailable: onDataAvailableCallback,
     onTranscribe: onTranscribeCallback,
+    whisperApiEndpoint = defaultWhisperApiEndpoint,
   } = {
     ...defaultConfig,
     ...config,
@@ -252,7 +254,6 @@ export const useWhisper: UseWhisperHook = (config) => {
    * - clear stop timeout
    */
   const onStartSpeaking = () => {
-    console.log('start speaking')
     setSpeaking(true)
     onStopTimeout('stop')
   }
@@ -263,7 +264,6 @@ export const useWhisper: UseWhisperHook = (config) => {
    * - start stop timeout back
    */
   const onStopSpeaking = () => {
-    console.log('stop speaking')
     setSpeaking(false)
     if (nonStop) {
       onStartTimeout('stop')
@@ -375,80 +375,60 @@ export const useWhisper: UseWhisperHook = (config) => {
    * - set transcribing state to false
    */
   const onTranscribing = async () => {
-    console.log('transcribing speech')
     try {
       if (encoder.current && recorder.current) {
-        const recordState = await recorder.current.getState()
+        const recordState = await recorder.current.getState();
         if (recordState === 'stopped') {
-          setTranscribing(true)
-          let blob = await recorder.current.getBlob()
+          setTranscribing(true);
+          let blob = await recorder.current.getBlob();
           if (removeSilence) {
-            const { createFFmpeg } = await import('@ffmpeg/ffmpeg')
-            const ffmpeg = createFFmpeg({
-              mainName: 'main',
-              corePath: ffmpegCoreUrl,
-              log: true,
-            })
-            if (!ffmpeg.isLoaded()) {
-              await ffmpeg.load()
-            }
-            const buffer = await blob.arrayBuffer()
-            console.log({ in: buffer.byteLength })
-            ffmpeg.FS('writeFile', 'in.wav', new Uint8Array(buffer))
-            await ffmpeg.run(
-              '-i', // Input
-              'in.wav',
-              '-acodec', // Audio codec
-              'libmp3lame',
-              '-b:a', // Audio bitrate
-              '96k',
-              '-ar', // Audio sample rate
-              '44100',
-              '-af', // Audio filter = remove silence from start to end with 2 seconds in between
-              silenceRemoveCommand,
-              'out.mp3' // Output
-            )
-            const out = ffmpeg.FS('readFile', 'out.mp3')
-            console.log({ out: out.buffer.byteLength })
-            // 225 seems to be empty mp3 file
+            const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+            const ffmpeg = new FFmpeg();
+            await ffmpeg.load({
+              coreURL: ffmpegCoreUrl,
+            });
+            const buffer = await blob.arrayBuffer();
+            await ffmpeg.writeFile('in.wav', new Uint8Array(buffer));
+            await ffmpeg.exec([
+              '-i', 'in.wav',
+              '-acodec', 'libmp3lame',
+              '-b:a', '96k',
+              '-ar', '44100',
+              '-af', silenceRemoveCommand,
+              'out.mp3'
+            ]);
+            const out = await ffmpeg.readFile('out.mp3', 'binary');
             if (out.length <= 225) {
-              ffmpeg.exit()
-              setTranscript({
-                blob,
-              })
-              setTranscribing(false)
-              return
+              ffmpeg.terminate();
+              setTranscript({ blob });
+              setTranscribing(false);
+              return;
             }
-            blob = new Blob([out.buffer], { type: 'audio/mpeg' })
-            ffmpeg.exit()
+            blob = new Blob([out], { type: 'audio/mpeg' });
+            ffmpeg.terminate();
           } else {
-            const buffer = await blob.arrayBuffer()
-            console.log({ wav: buffer.byteLength })
-            const mp3 = encoder.current.encodeBuffer(new Int16Array(buffer))
-            blob = new Blob([mp3], { type: 'audio/mpeg' })
-            console.log({ blob, mp3: mp3.byteLength })
+            const buffer = await blob.arrayBuffer();
+            const mp3 = encoder.current.encodeBuffer(new Int16Array(buffer));
+            blob = new Blob([mp3], { type: 'audio/mpeg' });
           }
           if (typeof onTranscribeCallback === 'function') {
-            const transcribed = await onTranscribeCallback(blob)
-            console.log('onTranscribe', transcribed)
-            setTranscript(transcribed)
+            const transcribed = await onTranscribeCallback(blob);
+            setTranscript(transcribed);
           } else {
-            const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' })
-            const text = await onWhispered(file)
-            console.log('onTranscribing', { text })
-            setTranscript({
-              blob,
-              text,
-            })
+            const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' });
+            const text = await onWhispered(file);
+            setTranscript({ blob, text });
           }
-          setTranscribing(false)
+          setTranscribing(false);
         }
       }
     } catch (err) {
-      console.info(err)
-      setTranscribing(false)
+      setTranscribing(false);
     }
-  }
+  };
+  
+  
+
 
   /**
    * Get audio data in chunk based on timeSlice
@@ -457,7 +437,6 @@ export const useWhisper: UseWhisperHook = (config) => {
    * - set transcript text with interim result
    */
   const onDataAvailable = async (data: Blob) => {
-    console.log('onDataAvailable', data)
     try {
       if (streaming && recorder.current) {
         onDataAvailableCallback?.(data)
@@ -476,7 +455,6 @@ export const useWhisper: UseWhisperHook = (config) => {
             type: 'audio/mpeg',
           })
           const text = await onWhispered(file)
-          console.log('onInterim', { text })
           if (text) {
             setTranscript((prev) => ({ ...prev, text }))
           }
@@ -492,7 +470,7 @@ export const useWhisper: UseWhisperHook = (config) => {
    * - create formdata and append file, model, and language
    * - append more Whisper config if whisperConfig is provided
    * - add OpenAPI Token to header Authorization Bearer
-   * - post with axios to OpenAI Whisper transcript endpoint
+   * - post with fetch to OpenAI Whisper transcript endpoint
    * - return transcribed text result
    */
   const onWhispered = useMemoAsync(
@@ -513,16 +491,17 @@ export const useWhisper: UseWhisperHook = (config) => {
       if (whisperConfig?.temperature) {
         body.append('temperature', `${whisperConfig.temperature}`)
       }
-      const headers: RawAxiosRequestHeaders = {}
-      headers['Content-Type'] = 'multipart/form-data'
+      const headers: HeadersInit = {}
       if (apiKey) {
         headers['Authorization'] = `Bearer ${apiKey}`
       }
-      const { default: axios } = await import('axios')
-      const response = await axios.post(whisperApiEndpoint + mode, body, {
+      const response = await fetch(whisperApiEndpoint + mode, {
+        method: 'POST',
+        body,
         headers,
       })
-      return response.data.text
+      const data = await response.json()
+      return data.text
     },
     [apiKey, mode, whisperConfig]
   )
@@ -535,5 +514,6 @@ export const useWhisper: UseWhisperHook = (config) => {
     pauseRecording,
     startRecording,
     stopRecording,
+    onTranscribing
   }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "@chengsokdara/use-whisper",
-  "version": "0.2.0",
+  "name": "@cloudraker/use-whisper",
+  "version": "0.3.0",
   "description": "React Hook for OpenAI Whisper API with speech recorder and silence removal built-in.",
   "keywords": [
     "react",
@@ -17,11 +17,11 @@
     "remove",
     "removal"
   ],
-  "homepage": "https://github.com/chengsokdara/use-whisper#readme",
-  "bugs": "https://github.com/chengsokdara/use-whisper/issues",
+  "homepage": "https://github.com/cloudraker/use-whisper#readme",
+  "bugs": "https://github.com/cloudraker/use-whisper/issues",
   "license": "MIT",
-  "author": "Sokdara Cheng <chengsokdara@gmail.com> (https://chengsokdara.github.io)",
-  "repository": "github:chengsokdara/use-whisper",
+  "author": "Baptiste Laget <blaget@cloudraker.com> (https://www.cloudraker.com)",
+  "repository": "github:cloudraker/use-whisper",
   "scripts": {
     "dev": "env NODE_ENV=development tsup",
     "build": "env NODE_ENV=production tsup",
@@ -32,9 +32,8 @@
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
-    "@chengsokdara/react-hooks-async": "^0.0.2",
-    "@ffmpeg/ffmpeg": "^0.11.6",
-    "axios": "^1.3.4",
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.12.10",
     "hark": "^1.2.3",
     "lamejs": "github:zhuker/lamejs",
     "recordrtc": "^5.6.2"

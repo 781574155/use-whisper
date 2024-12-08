@@ -27,9 +27,10 @@
     "build": "env NODE_ENV=production tsup",
     "lint-fix": "eslint ./src --ext .ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "lint-format": "prettier  --loglevel warn --write \"./**/*.{ts,tsx,css,md,json}\"",
-    "lint": "yarn lint-format && yarn lint-fix",
-    "test": "yarn run tsc && yarn run lint",
-    "prepublishOnly": "yarn run build"
+    "lint": "npm run lint-format && npm run lint-fix",
+    "test": "npm run tsc && npm run lint",
+    "prepublishOnly": "npm run build",
+    "tsc": "tsc"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.11.0",

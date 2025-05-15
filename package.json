@@ -1,6 +1,6 @@
 {
-  "name": "@cloudraker/use-whisper",
-  "version": "0.3.0",
+  "name": "@tanqi/use-whisper",
+  "version": "0.4.0",
   "description": "React Hook for OpenAI Whisper API with speech recorder and silence removal built-in.",
   "keywords": [
     "react",
@@ -17,11 +17,11 @@
     "remove",
     "removal"
   ],
-  "homepage": "https://github.com/cloudraker/use-whisper#readme",
-  "bugs": "https://github.com/cloudraker/use-whisper/issues",
+  "homepage": "https://github.com/781574155/use-whisper#readme",
+  "bugs": "https://github.com/781574155/use-whisper/issues",
   "license": "MIT",
-  "author": "Baptiste Laget <blaget@cloudraker.com> (https://www.cloudraker.com)",
-  "repository": "github:cloudraker/use-whisper",
+  "author": "Easy Follow <781574155@qq.com>",
+  "repository": "github:781574155/use-whisper",
   "scripts": {
     "dev": "env NODE_ENV=development tsup",
     "build": "env NODE_ENV=production tsup",

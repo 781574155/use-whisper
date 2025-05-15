@@ -500,7 +500,7 @@ export const useWhisper: UseWhisperHook = (config) => {
       // Whisper only accept multipart/form-data currently
       const body = new FormData()
       body.append('file', file)
-      body.append('model', 'whisper-1')
+      body.append('model', whisperConfig?.model ?? 'whisper-1')
       if (mode === 'transcriptions') {
         body.append('language', whisperConfig?.language ?? 'en')
       }

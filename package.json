@@ -1,5 +1,5 @@
 {
-  "name": "@tanqi/use-whisper",
+  "name": "@easyfollow/use-whisper",
   "version": "0.4.0",
   "description": "React Hook for OpenAI Whisper API with speech recorder and silence removal built-in.",
   "keywords": [
@@ -71,6 +71,7 @@
   },
   "type": "module",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
